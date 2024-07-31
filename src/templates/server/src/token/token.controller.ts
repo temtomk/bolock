@@ -31,7 +31,7 @@ export class TokenController {
     }
   }
 
-  @Get('/getBalance')
+  @Get('/balance')
   async getBalance(): Promise<bigint> {
     try {
       return await this.tokentService.getBalance();      
@@ -40,7 +40,7 @@ export class TokenController {
     }
   }
 
-  @Post('/transper')
+  @Post('/transfer')
   async transfer(): Promise<ContractTransactionResponse> {
     try {
       return await this.tokentService.transfer();      
