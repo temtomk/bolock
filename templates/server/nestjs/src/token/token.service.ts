@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Token__factory, Token } from '../token/contracts/typechain-types';
+import { Token__factory, Token } from './contracts/typechain-types';
 import {Provider, Wallet, JsonRpcProvider, ContractTransactionResponse} from 'ethers';
 
 @Injectable()

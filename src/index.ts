@@ -1,85 +1,69 @@
-import { Command } from 'commander';
-import readline from 'readline';
-import path from 'path';
-import { createReactTemplate } from './templates/react';
-import { createNestJSTemplate } from './templates/nestjs';
-import { createHardhatTemplate } from './templates/hardhat';
-import { createDirectory } from './utils';
+import { Command } from "commander";
+import { checkbox, select, Separator } from "@inquirer/prompts";
 
 const program = new Command();
 
-function question(rl: readline.Interface, query: string): Promise<string> {
-  return new Promise((resolve) => {
-    rl.question(query, resolve);
-  });
-}
-
-async function promptForChoice(rl: readline.Interface, message: string, choices: string[]): Promise<string> {
-  console.log(message);
-  choices.forEach((choice, index) => {
-    console.log(`${index + 1}. ${choice}`);
-  });
-
-  while (true) {
-    const answer = await question(rl, 'Enter your choice (number): ');
-    const choiceIndex = parseInt(answer) - 1;
-    if (choiceIndex >= 0 && choiceIndex < choices.length) {
-      return choices[choiceIndex];
-    }
-    console.log('Invalid choice. Please try again.');
-  }
-}
+program.version("1.0.0").description("블록체인 프로젝트 빌더");
 
 program
-  .version('1.0.0')
-  .description('A CLI tool to create project templates for different tech stacks')
+  .command("build")
+  .description("프로젝트 빌드 선택")
   .action(async () => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
+    const components = await checkbox({
+      message: "블록체인 프로젝트 빌더를 선택하시겠습니까?",
+      choices: [
+        { name: "web", value: "web" },
+        { name: "server", value: "server" },
+        { name: "blockchain", value: "blockchain" },
+      ],
     });
 
-    try {
-      const stack = await promptForChoice(rl, 'Which tech stack would you like to use?', ['React', 'Nest.js', 'Hardhat']);
-      const projectName = await question(rl, 'Enter project name: ');
-
-      const projectsDir = path.join(process.cwd(), 'projects');
-      await createDirectory(projectsDir);
-
-      const projectDir = path.join(projectsDir, projectName);
-      await createDirectory(projectDir);
-
-      switch (stack.toLowerCase()) {
-        case 'react':
-          await createReactTemplate(projectDir);
-          console.log(`\nTo start your React project:`);
-          console.log(`cd ${path.relative(process.cwd(), projectDir)}`);
-          console.log(`npm start`);
+    for (const component of components) {
+      switch (component) {
+        case "web":
+          await chooseWebFramework();
           break;
-        case 'nest.js':
-          await createNestJSTemplate(projectDir);
-          console.log(`\nTo start your NestJS project:`);
-          console.log(`cd ${path.relative(process.cwd(), projectDir)}`);
-          console.log(`npm run start:dev`);
+        case "server":
+          await chooseServerFramework();
           break;
-        case 'hardhat':
-          await createHardhatTemplate(projectDir);
-          console.log(`\nTo compile your Hardhat project:`);
-          console.log(`cd ${path.relative(process.cwd(), projectDir)}`);
-          console.log(`npx hardhat compile`);
+        case "blockchain":
+          await chooseBlockchainFramework();
           break;
-        default:
-          console.error('Invalid selection');
-          process.exit(1);
       }
-
-      console.log(`\nProject created successfully in ${projectDir}`);
-    } catch (error) {
-      console.error('An error occurred:', error);
-    } finally {
-      rl.close();
-      process.exit(0);  // 프로세스를 명시적으로 종료합니다.
     }
   });
+
+async function chooseWebFramework() {
+  const webFramework = await select({
+    message: "어떤 웹 프레임워크를 선택하시겠습니까?",
+    choices: [
+      { name: "React", value: "react" },
+      { name: "next.js", value: "next.js" },
+    ],
+  });
+  console.log(`선택하신 웹 프레임워크: ${webFramework}`);
+}
+
+async function chooseServerFramework() {
+  const serverFramework = await select({
+    message: "어떤 서버 프레임워크를 선택하시겠습니까?",
+    choices: [
+      { name: "nest.js", value: "nest.js" },
+      { name: "fastapi", value: "fastapi" },
+    ],
+  });
+  console.log(`선택하신 서버 프레임워크: ${serverFramework}`);
+}
+
+async function chooseBlockchainFramework() {
+  const blockchainFramework = await select({
+    message: "어떤 블록체인 프레임워크를 선택하시겠습니까?",
+    choices: [
+      { name: "hardhat", value: "hardhat" },
+      { name: "forge", value: "forge" },
+    ],
+  });
+  console.log(`선택하신 블록체인 프레임워크: ${blockchainFramework}`);
+}
 
 program.parse(process.argv);
